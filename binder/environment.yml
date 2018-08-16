@@ -3,7 +3,6 @@ channels:
   - defaults
 dependencies:
   - appdirs=1.4.3
-  - appnope=0.1.0
   - asn1crypto=0.24.0
   - attrs=18.1.0
   - automat=0.7.0
@@ -40,14 +39,6 @@ dependencies:
   - jupyter_client=5.2.3
   - jupyter_console=5.2.0
   - jupyter_core=4.4.0
-  - libcxx=4.0.1
-  - libcxxabi=4.0.1
-  - libedit=3.1.20170329
-  - libffi=3.2.1
-  - libgfortran=3.0.1
-  - libiconv=1.15
-  - libpng=1.6.34
-  - libsodium=1.0.16
   - markupsafe=1.0
   - mistune=0.8.3
   - mkl=2018.0.3=1
