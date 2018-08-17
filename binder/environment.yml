@@ -1,6 +1,6 @@
 name: introducing-pandas
 channels:
-  - defaults
+  - conda-forge
 dependencies:
   - numpy=1.15.0
   - pandas=0.23.4
