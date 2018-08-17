@@ -1,0 +1,1 @@
+jupyter nbconvert $1 --to markdown --stdout|pbcopy
