@@ -1,9 +1,12 @@
+import random
+import datetime
 import pandas as pd
-
 from faker import Faker
 from faker.providers.internet import Provider
 
 class CashBoxUserProvider(Provider):
+    MIN_DATE = datetime.date(2018, 1, 1)
+    MAX_DAYS = (datetime.date.today() - MIN_DATE).days
 
     _username_formats = (
         '{first_letter}{last_name}',
@@ -14,8 +17,14 @@ class CashBoxUserProvider(Provider):
         '{last_name}{random_number}',
     )
 
+    _username_last_safe_formats = tuple(f for f in _username_formats
+                                        if 'last_name' not in f)
+
     def username(self, first_name, last_name):
-        formatter = self.random_element(self._username_formats)
+        if last_name:
+            formatter = self.random_element(self._username_formats)
+        else:
+            formatter = self.random_element(self._username_last_safe_formats)
         return formatter.format(
             first_name=first_name.lower(),
             last_name=last_name.lower(),
@@ -23,14 +32,43 @@ class CashBoxUserProvider(Provider):
             random_number=self.random_number(digits=4)
         )
 
+    def signup_date(self):
+        return self.MIN_DATE + datetime.timedelta(
+            days=random.randint(0, self.MAX_DAYS))
+
+    def email(self, first_name, last_name):
+        username = self.username(first_name, last_name)
+        domain = self.random_element({
+            self.generator.free_email_domain(): 0.9,
+            self.generator.domain_name(): 0.1
+        })
+        return '@'.join([username, domain])
+
+    def email_verified(self):
+        return self.random_element({
+            True: 0.8,
+            False: 0.2
+        })
+
+    def last_name_or(self, or_value):
+        return self.random_element({
+            self.generator.last_name(): 0.9,
+            or_value: 0.1
+        })
+
     def user_dict(self):
         first_name = self.generator.first_name()
-        last_name = self.generator.last_name()
+        # Randomly have last names
+        last_name = self.last_name_or("")
         username = self.username(first_name, last_name)
         return {
             username: {
                 'first_name': first_name,
                 'last_name': last_name,
+                'email': self.email(first_name, last_name),
+                'email_verified': self.email_verified(),
+                'signup_date': self.signup_date(),
+                'referral_count': self.random_int(0, 7),
                 'balance': (self.random_number(digits=4) / 100)
             }
         }
