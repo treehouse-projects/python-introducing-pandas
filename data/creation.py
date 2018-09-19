@@ -32,6 +32,13 @@ class CashBoxUserProvider(Provider):
             random_number=self.random_number(digits=4)
         )
 
+    def existing_username(self, users_df):
+        return users_df.sample(1).index[0]
+
+    def date_after_signup(self, users_df, *user_names):
+        return max(*[users_df.at[u, 'signup_date']
+                     for u in user_names])
+
     def signup_date(self):
         return self.MIN_DATE + datetime.timedelta(
             days=random.randint(0, self.MAX_DAYS))
@@ -87,13 +94,16 @@ users = pd.DataFrame.from_dict(user_row_dict, orient='index')
 
 sent_records = []
 for _ in range(998):
-    sender = users.sample(1).index[0]
-    receiver = users.sample(1).index[0]
+    sender = fake.existing_username(users)
+    receiver = fake.existing_username(users)
+    sent_date = fake.date_after_signup(users, sender, receiver)
     amount = fake.random_number(digits=4) / 100
-    sent_records.append((sender, receiver, amount))
+    sent_records.append((sender, receiver, amount, sent_date))
 
-transactions = pd.DataFrame.from_records(sent_records,
-                                         columns=['sender', 'receiver', 'amount'])
+transactions = pd.DataFrame.from_records(
+    sent_records,
+    columns=['sender', 'receiver', 'amount', 'sent_date']
+)
 
 # Create requests that appear to be fulfilled
 request_records = []
@@ -107,15 +117,24 @@ for _ in range(214):
         )
     )
 
+transactions.sort_values(by='sent_date', inplace=True)
+transactions.reset_index(drop=True, inplace=True)
+
 # And now unfulfilled requests
 for _ in range(99):
-    from_user = users.sample(1).index[0]
-    to_user = users.sample(1).index[0]
+    from_user = fake.existing_username(users)
+    to_user = fake.existing_username(users)
+    request_date = fake.date_after_signup(users, from_user, to_user)
     amount = fake.random_number(digits=4) / 100
-    request_records.append((from_user, to_user, amount))
+    request_records.append((from_user, to_user, amount, request_date))
 
-requests = pd.DataFrame.from_records(request_records,
-                                     columns=['from_user', 'to_user', 'amount'])
+requests = pd.DataFrame.from_records(
+    request_records,
+    columns=['from_user', 'to_user', 'amount', 'request_date']
+)
+
+requests.sort_values(by='request_date', inplace=True)
+requests.reset_index(drop=True, inplace=True)
 
 if __name__ == '__main__':
     users.to_csv('data/users.csv')
