@@ -12,7 +12,7 @@ class CashBoxUserProvider(Provider):
         '{first_letter}{last_name}',
         '{first_name}',
         '{last_name}',
-        '{first_name}.{last_name}'
+        '{first_name}.{last_name}',
         '{first_name}{random_number}',
         '{last_name}{random_number}',
     )
@@ -35,13 +35,20 @@ class CashBoxUserProvider(Provider):
     def existing_username(self, users_df):
         return users_df.sample(1).index[0]
 
-    def date_after_signup(self, users_df, *user_names):
-        return max(*[users_df.at[u, 'signup_date']
-                     for u in user_names])
+    def date_after_signup(self, users_df, *user_names, max_date=None):
+        min_date = max(*[users_df.at[u, 'signup_date']
+                         for u in user_names])
+        return self.random_date(min_date, max_date)
 
     def signup_date(self):
-        return self.MIN_DATE + datetime.timedelta(
-            days=random.randint(0, self.MAX_DAYS))
+        return self.random_date(self.MIN_DATE)
+
+    def random_date(self, minimum_date, max_date=None):
+        if max_date is None:
+            max_date = datetime.date.today()
+        max_days = (max_date - minimum_date).days
+        return minimum_date + datetime.timedelta(
+            days=random.randint(0, max_days))
 
     def email(self, first_name, last_name):
         username = self.username(first_name, last_name)
@@ -90,6 +97,16 @@ for _ in range(500):
     # Last one wins
     user_row_dict.update(fake.user_dict())
 
+user_row_dict['adrian'] =  {
+    'first_name': 'Adrian',
+    'last_name': 'Yang',
+    'email': 'adrian.yang@teamtreehouse.com',
+    'email_verified': fake.email_verified(),
+    'signup_date': fake.signup_date(),
+    'referral_count': fake.random_int(0, 7),
+    'balance': 30.01
+}
+
 users = pd.DataFrame.from_dict(user_row_dict, orient='index')
 
 sent_records = []
@@ -109,11 +126,16 @@ transactions = pd.DataFrame.from_records(
 request_records = []
 for _ in range(214):
     transaction = transactions.sample(1)
+    from_user = transaction.receiver.iloc[0]
+    to_user = transaction.sender.iloc[0]
+    amount = transaction.amount.iloc[0]
+    request_date = fake.date_after_signup(users, from_user, to_user, max_date=transaction.sent_date.iloc[0])
     request_records.append(
         (
-            transaction.receiver.iloc[0],
-            transaction.sender.iloc[0],
-            transaction.amount.iloc[0]
+            from_user,
+            to_user,
+            amount,
+            request_date
         )
     )
 
