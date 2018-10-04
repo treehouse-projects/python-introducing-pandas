@@ -1,0 +1,7 @@
+<script type="text/javascript">
+    // In order to override default notebook styles we need a specific class on our markdown area
+    const els = document.getElementsByClassName('markdown-zone');
+    for (let i = 0; i < els.length; i++) {
+        els[i].classList.add('markdown--jupyter-notebook');
+    }
+</script>

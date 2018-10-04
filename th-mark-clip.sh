@@ -2,8 +2,8 @@
 {
     now=$(date +"%Y-%m-%d") ;
     echo -e "<!-- Generated from $1 on $now -->" ;
-    echo -e '<span class="markdown--jupyter-notebook">\n' ;
     jupyter nbconvert $1 --to markdown --stdout;
-    echo -e '</span>\n' ;
+    echo -e "\n\n\n" ;
+    cat ./th-script-snippet.html ;
 } | pbcopy
-echo 'Your clipboard is filled with delicious notebook markdown'
+echo -e "Your clipboard is filled with delicious notebook markdown generated from $1"
