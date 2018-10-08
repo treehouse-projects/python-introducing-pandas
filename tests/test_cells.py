@@ -27,6 +27,6 @@ class TestReferralCounts(unittest.TestCase):
                          "I found some referral counts that were less than 5. Check your condition.")
     
     def test_total(self):
-        self.assertEquals(len(self.df), 152, 
+        self.assertEquals(len(self.df), len(self.df.loc[(self.df.referral_count >= 5) & (self.df.email_verified == True)]), 
                           "Whoops I received a different count than I expected, make sure the last line "
                           "is the entire resulting DataFrame (not just the head)") 
