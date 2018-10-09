@@ -29,4 +29,30 @@ class TestReferralCounts(unittest.TestCase):
     def test_total(self):
         self.assertEquals(len(self.df), len(self.df.loc[(self.df.referral_count >= 5) & (self.df.email_verified == True)]), 
                           "Whoops I received a different count than I expected, make sure the last line "
-                          "is the entire resulting DataFrame (not just the head)") 
+                          "is the entire resulting DataFrame (not just the head)")
+
+
+@register_test('Update users')
+class TestUpdateUsers(unittest.TestCase):
+
+    def setUp(self):
+        self.df = self.cell.output
+
+    def test_kim_deal(self):
+        # Such a Pixie
+        self.assertEquals(
+            self.df.at['kimberly', 'last_name'],
+            'Deal',
+            'Are you sure you updated the last name of kimberly@yahoo.com to "Deal"?'
+        )
+
+    def test_jeffrey_with_one_f(self):
+        self.assertTrue(
+            'jefrey' in self.df.index,
+            'Did you rename the username jeffrey to jefrey?'
+        )
+
+        self.assertTrue(
+            'jeffrey' not in self.df.index,
+            'Did you forget to remove the old user name of jeffrey?'
+        )
