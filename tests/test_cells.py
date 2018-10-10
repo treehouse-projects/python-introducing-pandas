@@ -1,4 +1,8 @@
+import pandas as pd
+
+import os
 import unittest
+
 
 from .helpers import register_test
 
@@ -55,4 +59,64 @@ class TestUpdateUsers(unittest.TestCase):
         self.assertTrue(
             'jeffrey' not in self.df.index,
             'Did you forget to remove the old user name of jeffrey?'
+        )
+
+
+@register_test('Verified email list')
+class TestVerifiedEmailList(unittest.TestCase):
+
+    def setUp(self):
+        self.df = self.cell.output
+
+    def _get_expected(self):
+        users = pd.read_csv(os.path.join('data', 'users.csv'), index_col=0)
+        users.dropna(inplace=True)
+        return users.loc[
+            users.email_verified == True,
+            ['first_name', 'last_name', 'email']
+        ].sort_values(['last_name', 'first_name'])
+
+    def test_has_na(self):
+        self.assertEquals(
+            sum(self.df.last_name.isna()),
+            0,
+            "Looks like there are still rows with last names missing. Drop them!"
+        )
+
+    def test_columns(self):
+        expected = self._get_expected()
+        self.assertEquals(
+            len(self.df.columns),
+            len(expected.columns),
+            "Please only return the following columns: {}".format(
+                ', '.join(expected.columns))
+        )
+
+    def test_email_verified(self):
+        expected = self._get_expected()
+        self.assertEquals(
+            len(self.df),
+            len(expected),
+            "Ensure that you are only including users with verified emails"
+        )
+
+    def test_title_cased(self):
+        self.assertEquals(
+            sum(self.df.first_name.str.islower()),
+            0,
+            "Make sure you title case the first names, there are still some lower case versions"
+        )
+
+    def test_sort(self):
+        expected = self._get_expected()
+        msg = "Check your sort, it should be last name and then first name"
+        self.assertEquals(
+            self.df.iloc[0, 0],
+            expected.iloc[0, 0],
+            msg
+        )
+        self.assertEquals(
+            self.df.iloc[-1, 0],
+            expected.iloc[-1, 0],
+            msg
         )
