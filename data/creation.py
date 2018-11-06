@@ -99,8 +99,8 @@ for _ in range(500):
 
 user_row_dict['adrian'] =  {
     'first_name': 'Adrian',
-    'last_name': 'Yang',
-    'email': 'adrian.yang@teamtreehouse.com',
+    'last_name': 'Fang',
+    'email': 'adrian.fang@teamtreehouse.com',
     'email_verified': fake.email_verified(),
     'signup_date': fake.signup_date(),
     'referral_count': fake.random_int(0, 7),
