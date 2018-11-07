@@ -4,7 +4,8 @@ import io
 import sys
 import unittest
 
-from IPython.display import display, Markdown
+from IPython.display import display, Markdown, Javascript
+import ipywidgets as widgets
 
 
 registered_tests = {}
@@ -23,9 +24,13 @@ def register_test(test_text):
 def cell_matching(module, test_text):
     # In is a list of notebook cell inputs
     # Out is a dictionary of cell outputs
+    matching_indices = []
     for index, value in enumerate(module.In):
         if test_text in value:
-            return Cell(value, module.Out.get(index))
+            matching_indices.append(index)
+    if matching_indices:
+        # The last entry is the call to `check`
+        return Cell(value, module.Out.get(matching_indices[-2]))
     return None, None
 
 
@@ -43,6 +48,9 @@ def bound_test_class_for(module, test_text):
     BoundTestClass.__doc__ = "Cell Tests for " + test_text
     return BoundTestClass
 
+def execute_all_cells(b):
+      display(Javascript('''IPython.notebook.execute_all_cells();'''))
+
 
 def check(module_name, test_text):
     module = sys.modules[module_name]
@@ -51,4 +59,7 @@ def check(module_name, test_text):
     runner = unittest.TextTestRunner(stream=output_stream)
     runner.run(unittest.defaultTestLoader.loadTestsFromTestCase(test_class))
     md = '```\n' + output_stream.getvalue() + '\n```'
+    button = widgets.Button(description='Run Tests')
+    button.on_click(execute_all_cells)
+    display(button)
     display(Markdown(md))
